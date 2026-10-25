@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CS2569/SCS3-24 (10-Minute Version) — Enhancing Chest X-Ray Infiltration Detection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --kku-brick: #A73B24;
+      --kku-dark: #1E293B;
+      --med-blue: #0F4C81;
+      --med-teal: #0D9488;
+      --bg-light: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --text-main: #0F172A;
+      --text-muted: #475569;
+      --border: #E2E8F0;
+      --win-green: #DCFCE7;
+      --win-text: #166534;
+      --warn-red: #FEE2E2;
+      --warn-text: #991B1B;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sarabun', 'Inter', sans-serif;
+      background-color: #0F172A;
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .deck-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      display: none;
+      width: 1280px;
+      height: 720px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+      flex-direction: column;
+      transform-origin: center center;
+    }
+
+    .slide.active { display: flex; }
+
+    .slide-header {
+      background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 65%, #A73B24 100%);
+      color: white;
+      padding: 14px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 4px solid var(--kku-brick);
+    }
+
+    .slide-header .title-group h2 {
+      font-size: 23px;
+      font-weight: 700;
+    }
+
+    .slide-header .title-group p {
+      font-size: 13px;
+      color: #CBD5E1;
+      margin-top: 2px;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .badge-time {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(52, 211, 153, 0.5);
+      color: #A7F3D0;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-code {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .slide-body {
+      flex: 1;
+      padding: 20px 36px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .slide-footer {
+      background: #F1F5F9;
+      border-top: 1px solid var(--border);
+      padding: 8px 36px;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Cover Slide */
+    .cover-slide {
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 55%, #3B1D1A 100%);
+      color: white;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 48px 64px;
+    }
+
+    .cover-badge {
+      background: var(--kku-brick);
+      color: white;
+      padding: 8px 22px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 18px;
+      display: inline-block;
+    }
+
+    .cover-title-th {
+      font-size: 31px;
+      font-weight: 800;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      color: #F8FAFC;
+    }
+
+    .cover-title-en {
+      font-size: 19px;
+      font-weight: 600;
+      color: #38BDF8;
+      margin-bottom: 28px;
+    }
+
+    .cover-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      width: 100%;
+      max-width: 900px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 22px 32px;
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .cover-meta-grid h4 {
+      color: #94A3B8;
+      font-size: 13px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .cover-meta-grid p {
+      font-size: 16.5px;
+      font-weight: 600;
+      line-height: 1.55;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .card.accent-blue { border-left: 5px solid var(--med-blue); }
+    .card.accent-teal { border-left: 5px solid var(--med-teal); }
+    .card.accent-brick { border-left: 5px solid var(--kku-brick); }
+    .card.accent-gold { border-left: 5px solid #D97706; }
+
+    .card h3 {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: var(--med-blue);
+      margin-bottom: 6px;
+    }
+
+    .card p, .card li {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+
+    .card ul { padding-left: 18px; }
+    .card li { margin-bottom: 4px; }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      font-size: 13px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    table.data-table th {
+      background: #1E293B;
+      color: white;
+      font-weight: 600;
+      padding: 7px 10px;
+      text-align: center;
+    }
+
+    table.data-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    table.data-table td.left { text-align: left; }
+    table.data-table tr:nth-child(even) { background: #F8FAFC; }
+    table.data-table tr.row-winner {
+      background: var(--win-green) !important;
+      font-weight: 700;
+      color: var(--win-text);
+    }
+    table.data-table tr.row-warn {
+      background: var(--warn-red) !important;
+      color: var(--warn-text);
+    }
+
+    .formula-box {
+      background: #F1F5F9;
+      border: 1px dashed #94A3B8;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: 'Inter', monospace;
+      font-size: 13.5px;
+      font-weight: 600;
+      text-align: center;
+      color: #0F172A;
+      margin: 5px 0;
+    }
+
+    .img-box {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .img-box img {
+      max-width: 100%;
+      max-height: 340px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    .img-caption {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .callout {
+      background: #EFF6FF;
+      border-left: 5px solid #2563EB;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      line-height: 1.45;
+    }
+    .callout.warn { background: #FEF2F2; border-left-color: #DC2626; }
+    .callout.success { background: #F0FDF4; border-left-color: #16A34A; }
+
+    .notes-panel {
+      display: none;
+      background: #1E293B;
+      color: #F8FAFC;
+      padding: 12px 36px;
+      border-top: 2px solid #38BDF8;
+      font-size: 14.5px;
+      line-height: 1.55;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .notes-panel.show { display: block; }
+
+    .control-bar {
+      background: #090D16;
+      color: #CBD5E1;
+      padding: 8px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      border-top: 1px solid #1E293B;
+    }
+
+    .btn-group { display: flex; gap: 8px; align-items: center; }
+
+    button.ctrl-btn {
+      background: #1E293B;
+      color: white;
+      border: 1px solid #334155;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    button.ctrl-btn:hover { background: #334155; }
+    button.ctrl-btn.primary { background: var(--kku-brick); border-color: var(--kku-brick); }
+
+    .timer-display {
+      background: #064E3B;
+      border: 1px solid #10B981;
+      color: #A7F3D0;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-family: 'Inter', monospace;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .timer-display.warning { background: #78350F; border-color: #F59E0B; color: #FDE68A; }
+    .timer-display.expired { background: #7F1D1D; border-color: #EF4444; color: #FECACA; }
+
+    @media print {
+      body { background: white; overflow: visible; height: auto; }
+      .control-bar, .notes-panel { display: none !important; }
+      .deck-container { display: block; padding: 0; }
+      .slide {
+        display: flex !important;
+        page-break-after: always;
+        box-shadow: none;
+        border: 1px solid #ccc;
+        margin: 0 auto 20px auto;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="deck-container" id="deckContainer">
+
+    <!-- ================= SLIDE 1: COVER (0:25) ================= -->
+    <div class="slide cover-slide active" data-notes="[0:00 - 0:25 | สัพพัญญู] กราบเรียนท่านอาจารย์ที่ปรึกษา อาจารย์ ดร.พบพร ด่านวิรุทัย และคณะกรรมการทุกท่านครับ พวกผม นายสัพพัญญู คำตุ้ม และ นายปิยะพล ตุ่นป่า ขอนำเสนอเค้าโครงโครงงานคอมพิวเตอร์ รหัส CS2569/SCS3-24 เรื่อง การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอกด้วยการลดสัญญาณรบกวนและปัญญาประดิษฐ์ที่อธิบายได้ ครับ">
+      <div class="cover-badge">เค้าโครงโครงงานคอมพิวเตอร์ • รหัส CS2569/SCS3-24 (ฉบับนำเสนอ 10 นาที)</div>
+      <h1 class="cover-title-th">
+        การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอก<br/>
+        ด้วยการลดสัญญาณรบกวนและปัญญาประดิษฐ์ที่อธิบายได้
+      </h1>
+      <div class="cover-title-en">
+        ENHANCING CHEST X-RAY INFILTRATION DETECTION USING NOISE REDUCTION AND EXPLAINABLE AI
+      </div>
+
+      <div class="cover-meta-grid">
+        <div>
+          <h4>คณะผู้จัดทำ (5 นาทีแรก / 5 นาทีหลัง)</h4>
+          <p>1. นายสัพพัญญู คำตุ้ม &nbsp;(673380066-4) — สไลด์ 1–6</p>
+          <p>2. นายปิยะพล ตุ่นป่า &nbsp;&nbsp;(673380280-2) — สไลด์ 7–12</p>
+        </div>
+        <div>
+          <h4>อาจารย์ที่ปรึกษาโครงงาน</h4>
+          <p>อ.ดร.พบพร ด่านวิรุทัย (Dr. Pobporn Danvirutai)</p>
+          <p style="font-size:13.5px; color:#CBD5E1; font-weight:400; margin-top:4px;">
+            วิชา CP353761 สัมมนาทางวิทยาการคอมพิวเตอร์ • วิทยาลัยการคอมพิวเตอร์ มข.
+          </p>
+        </div>
+      </div>
+      <div style="font-size:13.5px; color:#94A3B8;">⏱️ สไลด์ที่ 1 ใช้เวลา <b>25 วินาที</b> • กดปุ่ม <b>▶ เริ่มจับเวลา 10 นาที</b> ด้านล่างเพื่อซ้อมนำเสนอ</div>
+    </div>
+
+    <!-- ================= SLIDE 2: BACKGROUND & GAPS (1:05) ================= -->
+    <div class="slide" data-notes="[0:25 - 1:30 | สัพพัญญู] ภาวะฝ้าในปอดหรือปอดอักเสบแทรกซึม (Pulmonary Infiltration) มีลักษณะเป็นฝ้าขาวจาง ๆ กระจายตัว ขอบเขตไม่ชัดเจน (Diffuse and Ill-defined Opacity) ทำให้เกิดความแปรปรวนในการอ่านผลระหว่างแพทย์ และแม้โมเดล CNN จะแม่นยำ แต่ติดปัญหาโมเดลกล่องดำ (Black-Box Problem) ที่ไม่รู้ว่าโมเดลดูรอยโรคจริงหรือดูสัญญาณรบกวน จากการทบทวนวรรณกรรมเราพบช่องว่างสำคัญ 2 ข้อ คือ 1. รอยโรค Infiltration ได้ F1-Score ต่ำกว่ารอยโรคขอบเขตชัด และแผนภาพ XAI มักชี้ขอบเขตผิดพลาด และ 2. การลด Noise เสี่ยงเกิดภาวะ Over-smoothing ลบรอยฝ้าบางจางทิ้งไปพร้อมกับ Noise และยังขาดการวัดผล XAI เชิงปริมาณภายใต้ Fair Comparison ครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>1. ที่มา ความสำคัญ และช่องว่างทางความรู้ (Background & Research Gaps)</h2>
+          <p>ความท้าทายของรอยโรค Infiltration ปัญหาโมเดลกล่องดำ และความเสี่ยงของภาวะ Over-smoothing</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 1:05 นาที (สัพพัญญู)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card accent-blue">
+            <h3>ปัญหาทางคลินิกและโมเดลกล่องดำ (Clinical & AI Challenge)</h3>
+            <ul>
+              <li><strong>Pulmonary Infiltration (ภาวะฝ้าในปอด/ปอดอักเสบแทรกซึม):</strong> รอยโรคมีลักษณะเป็น <strong>ฝ้าขาวจาง ๆ กระจายตัว ขอบเขตไม่ชัดเจน (Diffuse & Ill-defined Opacity)</strong> กลมกลืนกับเนื้อเยื่อปอดปกติ ก่อให้เกิดความแปรปรวนในการอ่านผลระหว่างแพทย์ (<strong>Inter-observer Variability</strong>) (Raoof et al., 2012; Wang et al., 2017)</li>
+              <li><strong>ปัญหาโมเดลกล่องดำ (Black-Box Problem):</strong> โครงข่าย CNN จำแนกโรคได้แม่นยำ แต่แพทย์ไม่สามารถทราบได้ว่าโมเดลตัดสินใจจากรอยโรคจริง หรือจาก <strong>สิ่งแปลกปลอม (Confounders)</strong> และ <strong>สัญญาณรบกวน (Noise)</strong> บนภาพถ่าย (Rudin, 2019; Dhar et al., 2023)</li>
+            </ul>
+          </div>
+          <div class="card accent-brick">
+            <h3>ช่องว่างทางความรู้ที่สำคัญ 2 ประการ (2 Research Gaps)</h3>
+            <ul>
+              <li><strong>ประการแรก (Gap 1):</strong> รอยโรคแบบฝ้ากระจาย (Infiltration) มักให้ความแม่นยำและค่า <strong>F1-Score ต่ำกว่า</strong> รอยโรคขอบเขตชัด (เช่น Nodule/Cardiomegaly) และแผนภาพ XAI มักล้มเหลวในการระบุขอบเขตรอยโรคที่แพร่กระจาย (Chrysoula, 2023)</li>
+              <li><strong>ประการที่สอง (Gap 2):</strong> การลดสัญญาณรบกวนมีความเสี่ยงที่จะเกิดภาวะ <strong>Over-smoothing</strong> ซึ่งลบรอยฝ้าบางจางของ Infiltration ทิ้งไปพร้อมกับ Noise อีกทั้งงานวิจัยส่วนใหญ่ประเมิน XAI เพียงสายตา (Qualitative) ขาดการเปรียบเทียบเชิงปริมาณ (<strong>Quantitative Localization</strong>) อย่างเป็นธรรม (<strong>Fair Comparison</strong>)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>แนวคิดของโครงงาน:</strong> ศึกษาผลกระทบของการลดสัญญาณรบกวนหลายระดับ (<strong>L1–L4</strong>), การแยกย่านความถี่ (<strong>DWT/DFT</strong>) และการรวมหลายมุมมอง (<strong>Multi-view Fusion</strong>) บนชุดข้อมูล <strong>NIH ChestX-ray14</strong> และ <strong>VinBigData</strong> ทั้งบนภาพต้นฉบับและภาพจำลอง Noise <strong>5 ตระกูล × 3 ระดับ (16 สภาวะ)</strong> ควบคู่กับการประเมิน <strong>PSNR/SSIM</strong> และ <strong>Quantitative XAI (Grad-CAM & SHAP)</strong>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอกด้วยการลดสัญญาณรบกวนและ XAI</span>
+        <span>สไลด์ 2 / 12 (เวลาสะสม 1:30 นาที)</span>
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 3: OBJECTIVES (0:45) ================= -->
+    <div class="slide" data-notes="[1:30 - 2:15 | สัพพัญญู] โครงงานนี้มีวัตถุประสงค์ 4 ข้อครับ 1. เพื่อเปรียบเทียบประสิทธิภาพเทคนิคการลดสัญญาณรบกวนหลายระดับ (L1-L4) และการรวมย่านความถี่บนชุดข้อมูล NIH ChestX-ray14 และ VinBigData 2. เพื่อพัฒนาและฝึกสอนโมเดล ResNet-50 ภายใต้เงื่อนไข Fair Comparison และทดสอบความทนทานต่อสัญญาณรบกวนจำลอง 5 ตระกูล 3 ระดับ รวม 16 สภาวะ 3. เพื่อประยุกต์ใช้ Grad-CAM และ SHAP แสดงบริเวณรอยโรคที่ส่งผลต่อการตัดสินใจ และ 4. เพื่อประเมินความแม่นยำในการระบุตำแหน่งรอยโรคของ XAI ในเชิงปริมาณ ผ่านตัวชี้วัด Pointing Game Hit Rate, Energy Inside Bounding Box และ IoU ครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>2. วัตถุประสงค์ของโครงงาน (Research Objectives)</h2>
+          <p>เป้าหมายหลักทั้ง 4 ข้อของการวิจัย</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 0:45 นาที (สัพพัญญู)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2" style="flex:1;">
+          <div class="card accent-blue">
+            <h3>3.1 เปรียบเทียบการลดสัญญาณรบกวน L1–L4 และการรวมความถี่</h3>
+            <p>ศึกษาและเปรียบเทียบประสิทธิภาพของ ภาพดั้งเดิม (Baseline), Median Filter, CLAHE + DWT, Denoising Autoencoder (DAE) + CLAHE, Pure DWT และการรวมเทคนิคเชิงความถี่ (<strong>Multi-view DWT L1–L4 Fusion</strong> และ <strong>DFT Low/Mid/High Fusion</strong>) บนชุดข้อมูล <strong>NIH ChestX-ray14</strong> และ <strong>VinBigData</strong></p>
+          </div>
+          <div class="card accent-teal">
+            <h3>3.2 ทดสอบความทนทานต่อ Noise 16 สภาวะ (Fair Comparison)</h3>
+            <p>พัฒนาและฝึกสอนแบบจำลอง <strong>ResNet-50</strong> ภายใต้เงื่อนไขควบคุมอย่างเป็นธรรม และทดสอบความทนทาน (Robustness) ทั้งบนภาพต้นฉบับและภาพจำลองสัญญาณรบกวน <strong>5 ตระกูล</strong> (Gaussian, Poisson, Poisson–Gaussian, Salt-and-Pepper, Speckle) ใน <strong>3 ระดับความแรง (N1–N3) รวม 16 สภาวะ</strong></p>
+          </div>
+          <div class="card accent-gold">
+            <h3>3.3 ประยุกต์ใช้ Explainable AI (Grad-CAM & SHAP)</h3>
+            <p>ประยุกต์ใช้เทคนิคปัญญาประดิษฐ์ที่อธิบายได้ ได้แก่ <strong>Grad-CAM</strong> (ระดับภูมิภาค) และ <strong>SHAP</strong> (ระดับพิกเซล) ในการแสดงและวิเคราะห์บริเวณรอยโรคที่ส่งผลต่อการตัดสินใจของแบบจำลอง</p>
+          </div>
+          <div class="card accent-brick">
+            <h3>3.4 ประเมินความแม่นยำการชี้ตำแหน่งรอยโรคเชิงปริมาณ</h3>
+            <p>ประเมินผลกระทบของการลดสัญญาณรบกวนต่อความแม่นยำของ XAI ในเชิงปริมาณ (<strong>Quantitative Localization</strong>) ผ่านตัวชี้วัด <strong>Pointing Game Hit Rate</strong>, <strong>Energy Inside Bounding Box</strong> และ <strong>IoU</strong> เทียบกับกรอบ Ground-Truth ของรังสีแพทย์</p>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอกด้วยการลดสัญญาณรบกวนและ XAI</span>
+        <span>สไลด์ 3 / 12 (เวลาสะสม 2:15 นาที)</span>
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 4: DATASETS & IMAGE CONTRACT (0:55) ================= -->
+    <div class="slide" data-notes="[2:15 - 3:10 | สัพพัญญู] ด้านชุดข้อมูล เราตรวจสอบข้ามชุดข้อมูลบน NIH ChestX-ray14 และ VinBigData โดยกำหนด Positive Class คือ Infiltration และ Negative Class คือ No Finding ล้วน เพื่อไม่ให้ฟีเจอร์โรคอื่นปะปน และแบ่งข้อมูลระดับผู้ป่วย (Patient-level Split) เพื่อป้องกัน Data Leakage ในการทดลองที่ 1 ใช้ Train 400, Val 80, Test 100 ภาพ ส่วนการทดลองที่ 2 เราวัดระดับ Noise เดิมด้วยวิธี Wavelet MAD (db2) แล้วคัดภาพที่สะอาดที่สุดมาเติม Noise จำลอง ได้ Train 320, Val 80, Test 100 ภาพ พร้อมกำหนด Image Contract มาตรฐานเดียวกันครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>3. ชุดข้อมูล การป้องกัน Data Leakage และสัญญาข้อมูลภาพ (Datasets)</h2>
+          <p>การตรวจสอบข้ามชุดข้อมูล (Cross-dataset Validation) และการควบคุมมาตรฐานการประมวลผล</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 0:55 นาที (สัพพัญญู)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card accent-blue">
+            <h3>1. NIH ChestX-ray14 (Wang et al., 2017)</h3>
+            <ul>
+              <li>ภาพขนาด $1024\times1024$ พิกเซล (จากฐานข้อมูล 112,120 ภาพ)</li>
+              <li><strong>Positive:</strong> <code>Infiltration</code> | <strong>Negative:</strong> <code>No Finding</code> เท่านั้น (ไม่รวมโรคแทรกซ้อนอื่นเพื่อป้องกันฟีเจอร์ปะปน)</li>
+              <li>แบ่งข้อมูลระดับผู้ป่วย (<strong>Patient-level Split</strong>) ตาม <code>train_val_list.txt</code> และ <code>test_list.txt</code> ป้องกันปัญหา Data Leakage</li>
+            </ul>
+          </div>
+          <div class="card accent-teal">
+            <h3>2. VinBigData Chest X-ray (Nguyen et al., 2022)</h3>
+            <ul>
+              <li>ภาพขนาด $512\times512$ พิกเซล มีรอยโรคชัดเจนและฉลากตรวจสอบโดยรังสีแพทย์</li>
+              <li><strong>Positive:</strong> <code>Infiltration</code> | <strong>Negative:</strong> <code>No Finding</code></li>
+              <li>มีกรอบพิกัดรอยโรคจริง (<strong>Ground-Truth Bounding Box</strong>) จากรังสีแพทย์สำหรับใช้ประเมิน XAI เชิงปริมาณ</li>
+            </ul>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card accent-gold">
+            <h3>สัดส่วนชุดข้อมูล (เหมือนกันทั้ง 2 ชุดข้อมูล)</h3>
+            <ul>
+              <li><strong>การทดลองที่ 1 (21 สภาวะบนภาพต้นฉบับ):</strong> Train <strong>400 ภาพ</strong> (200/คลาส), Validation <strong>80 ภาพ</strong>, Balanced Test <strong>100 ภาพ</strong> (50/คลาส)</li>
+              <li><strong>การทดลองที่ 2 (จำลอง Noise 16 สภาวะ):</strong> คัดภาพที่มี Noise เดิมต่ำที่สุดด้วยวิธี <strong>Wavelet MAD (db2)</strong> บนภาพต้นฉบับ 70,012 ภาพ ได้ Train <strong>320 ภาพ</strong> (160/คลาส), Validation <strong>80 ภาพ</strong>, Test <strong>100 ภาพ</strong></li>
+            </ul>
+          </div>
+          <div class="card accent-brick">
+            <h3>Image Contract & Fixed Backbone</h3>
+            <ul>
+              <li><strong>Image Contract:</strong> กำหนดให้ทุกเทคนิครับ-ส่งอาร์เรย์ NumPy 2 มิติ ชนิด <code>uint8</code> ช่วงความสว่าง <code>[0, 255]</code> ขนาด $256\times256$ พิกเซล</li>
+              <li><strong>Fixed Backbone:</strong> ย่อเป็น $224\times224$ ป้อนเข้า <strong>ResNet-50</strong> (ImageNet Pretrained) ด้วยชุดข้อมูลและ Random Seed (42) เดียวกัน</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอกด้วยการลดสัญญาณรบกวนและ XAI</span>
+        <span>สไลด์ 4 / 12 (เวลาสะสม 3:10 นาที)</span>
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 5: EXP 1 & EXP 2 DESIGN (1:05) ================= -->
+    <div class="slide" data-notes="[3:10 - 4:15 | สัพพัญญู] เราแบ่งการทดลองเป็น 2 การทดลองหลักครับ การทดลองที่ 1 เปรียบเทียบบนภาพต้นฉบับ 21 สภาวะ แบ่งเป็น 6 กลุ่ม คือ Baseline, Median Filter (3x3 ถึง 9x9), CLAHE+DWT, DAE+CLAHE, Pure DWT และการแยกย่านความถี่เดี่ยว ส่วนการทดลองที่ 2 ทดสอบความทนทานต่อสัญญาณรบกวนจำลอง 5 ตระกูล ได้แก่ Gaussian, Poisson, Poisson-Gaussian, Salt-and-Pepper และ Speckle ใน 3 ระดับความแรง (N1, N2, N3) รวมกับภาพ Clean เป็น 16 สภาวะ แล้วนำมาผ่านวิธีลด Noise และการรวมเทคนิค 12 วิธี ซึ่งรวมถึง DWT Fusion (5 Views) และ DFT Fusion (3 Views) ครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>4. การออกแบบการทดลองที่ 1 (21 สภาวะ) และการทดลองที่ 2 (12 วิธี × 16 สภาวะ)</h2>
+          <p>การศึกษาระดับความแรง L1–L4, สัญญาณรบกวน 5 ตระกูล และการรวมหลายมุมมองความถี่</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 1:05 นาที (สัพพัญญู)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2" style="align-items: start;">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="card accent-blue" style="padding:10px 14px;">
+              <h3>การทดลองที่ 1: ภาพต้นฉบับ 21 สภาวะ (6 กลุ่ม)</h3>
+              <p style="font-size:13px;">ฝึก ResNet-50 แยกกัน 1 โมเดล/สภาวะ (Adam $\text{LR}=10^{-4}$, 7 Epochs):<br/>
+              <strong>(1)</strong> Baseline &nbsp;|&nbsp; <strong>(2)</strong> Median Filter $3\times3, 5\times5, 7\times7, 9\times9$ (L1–L4)<br/>
+              <strong>(3)</strong> CLAHE+DWT db1 (L1–L4) &nbsp;|&nbsp; <strong>(4)</strong> DAE+CLAHE (L1–L4)<br/>
+              <strong>(5)</strong> Pure DWT db1 (L1–L4) &nbsp;|&nbsp; <strong>(6)</strong> DWT Band (Low, Mid, High Only, Selective)</p>
+            </div>
+
+            <div class="card accent-teal" style="padding:10px 14px;">
+              <h3>การทดลองที่ 2: จำลอง Noise 16 สภาวะ × 12 วิธี</h3>
+              <p style="font-size:13px;"><strong>16 สภาวะ (1 Clean + 5 ตระกูล × N1, N2, N3):</strong><br/>
+              • Gaussian ($\sigma=0.02, 0.05, 0.10$) &nbsp;• Poisson ($\text{Peak}=500, 100, 30$)<br/>
+              • Poisson–Gaussian &nbsp;• Salt & Pepper ($0.5\%, 2\%, 5\%$) &nbsp;• Speckle ($\sigma=0.05, 0.10, 0.20$)<br/>
+              <strong>12 วิธีลด Noise & Fusion (AdamW, Early Stopping, Youden's J):</strong><br/>
+              • <code>baseline</code>, <code>median_L1..L3</code>, <code>clahe_dwt_L1..L3</code>, <code>dae_clahe_L1..L3</code> (1 View)<br/>
+              • <code>dwt_L1_L4_fusion</code> (<strong>5 Views</strong>) และ <code>dft_low_mid_high_fusion</code> (<strong>3 Views</strong>)</p>
+            </div>
+          </div>
+
+          <div class="img-box">
+            <img src="slides_assets/Fig01_VinBigData_Gaussian_N2_Denoising_Comparison.png" alt="VinBigData Gaussian N2 Denoising" style="max-height:410px;" />
+            <div class="img-caption">ภาพที่ 1 ตัวอย่างภาพ Infiltration (VinBigData) ที่เติม Gaussian N2 และผลจากแต่ละวิธี</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอกด้วยการลดสัญญาณรบกวนและ XAI</span>
+        <span>สไลด์ 5 / 12 (เวลาสะสม 4:15 นาที)</span>
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 6: EVALUATION METRICS (0:45) ================= -->
+    <div class="slide" data-notes="[4:15 - 5:00 | สัพพัญญู] ตัวชี้วัดการประเมินผลแบ่งเป็น 3 มิติครับ 1. คุณภาพการกู้คืนภาพ วัดด้วย PSNR และ SSIM เทียบกับภาพ Clean เพื่อตรวจสอบว่าค่าคุณภาพภาพทางสถิติสอดคล้องกับความแม่นยำของ AI หรือไม่ 2. ประสิทธิภาพการจำแนกโรค วัดผ่าน Confusion Matrix, Accuracy, Precision, Recall, Specificity, F1-Score รวมถึง ROC-AUC และ PR-AUC และ 3. ความแม่นยำเชิงตำแหน่งของ XAI วัดความสอดคล้องกับกรอบของแพทย์ด้วย Pointing Game Hit Rate, Energy Inside Bounding Box และ IoU ครับ ลำดับต่อไปขอเชิญคุณปิยะพลนำเสนอผลการทดลองครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>5. ตัวชี้วัดการประเมินผลทั้ง 3 มิติ (Evaluation Metrics)</h2>
+          <p>การประเมินคุณภาพภาพทางสถิติ ประสิทธิภาพการจำแนกโรค และความแม่นยำเชิงตำแหน่งของ XAI</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 0:45 นาที (สัพพัญญู)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="grid-3" style="flex:1;">
+          <div class="card accent-blue">
+            <h3>1. คุณภาพการกู้คืนภาพ</h3>
+            <p>เทียบกับภาพก่อนเติมสัญญาณรบกวน (Clean):</p>
+            <div class="formula-box">PSNR = 10 · log₁₀( MAX² / MSE )</div>
+            <ul>
+              <li><strong>PSNR (dB):</strong> วัดความเที่ยงตรงของสัญญาณภาพระดับพิกเซล</li>
+              <li><strong>SSIM [0, 1]:</strong> วัดความคล้ายคลึงเชิงโครงสร้าง ความสว่าง และความเปรียบต่าง (Wang et al., 2004)</li>
+            </ul>
+          </div>
+
+          <div class="card accent-teal">
+            <h3>2. ประสิทธิภาพการจำแนกโรค</h3>
+            <p>ประเมินบนชุดทดสอบผ่านตัวชี้วัดมาตรฐานทางการแพทย์:</p>
+            <div class="formula-box">F1 = 2 × (Precision × Recall) / (Precision + Recall)</div>
+            <ul>
+              <li><strong>Accuracy, Precision, Sensitivity (Recall), Specificity</strong></li>
+              <li><strong>ROC-AUC & PR-AUC:</strong> ประเมินโดยไม่ขึ้นกับเกณฑ์ตัดสินใจ (Fawcett, 2006; Saito & Rehmsmeier, 2015)</li>
+            </ul>
+          </div>
+
+          <div class="card accent-brick">
+            <h3>3. ความแม่นยำเชิงตำแหน่ง XAI</h3>
+            <p>เทียบ Saliency Map $H(x,y)$ กับกรอบแพทย์ $B$:</p>
+            <div class="formula-box">Hit = 𝕀( argmax H(x,y) ∈ B )</div>
+            <div class="formula-box">Energy = [ Σ_{(x,y)∈B} H(x,y) / Σ H(x,y) ] × 100%</div>
+            <div class="formula-box">IoU(τ) = |M_τ ∩ B| / |M_τ ∪ B|</div>
+            <ul>
+              <li>ประเมินทั้งจุดสูงสุด (Pointing Game), พลังงานในกรอบ (Energy) และพื้นที่ซ้อนทับ ($\tau=0.3, 0.5$)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>จบช่วงที่ 1 (5:00 นาที) • ส่งต่อให้ผู้นำเสนอคนที่ 2: นายปิยะพล ตุ่นป่า</span>
+        <span>สไลด์ 6 / 12 (เวลาสะสม 5:00 นาที)</span>
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 7: EXP 1 RESULTS (1:00) ================= -->
+    <div class="slide" data-notes="[5:00 - 6:00 | ปิยะพล] ขอบคุณครับ สำหรับผลการทดลองที่ 1 บนภาพต้นฉบับ 21 สภาวะ บน NIH ค่า Accuracy อยู่ในช่วง 49-59% โดย Pure DWT L1 ได้ ROC-AUC สูงสุด 0.6616 ส่วนบน VinBigData ภาพ Baseline ได้ Accuracy สูงสุด 92.00% และ Median L3 ได้ ROC-AUC สูงสุด 0.9680 ข้อค้นพบสำคัญมี 2 ประเด็นครับ 1. เมื่อเพิ่มขนาด Median Filter จาก L3 (7x7) เป็น L4 (9x9) ความแม่นยำตกลงทั้งสองชุดข้อมูล คือบน NIH ลดจาก 59% เหลือ 57% และบน VinBigData ลดจาก 91% เหลือ 87% เป็นหลักฐานของภาวะ Over-smoothing และ 2. การใช้ย่านความถี่เดี่ยว (Low/Mid/High Only) ทำให้ Accuracy บน VinBigData ลดลงเหลือ 78-85% พิสูจน์ว่าข้อมูลรอยโรคกระจายอยู่ในหลายย่านความถี่ จึงนำไปสู่การทำ Multi-view Fusion ในการทดลองที่ 2 ครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>6. ผลการทดลองที่ 1: ภาพต้นฉบับ 21 สภาวะ & หลักฐาน Over-smoothing</h2>
+          <p>ตารางที่ 4–5 และภาพที่ 2–3 ผลการจำแนกโรคบนชุดข้อมูล NIH ChestX-ray14 และ VinBigData</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 1:00 นาที (ปิยะพล)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div>
+            <table class="data-table" style="font-size:12px;">
+              <thead>
+                <tr>
+                  <th>สภาวะตัวแทน (การทดลองที่ 1)</th>
+                  <th>NIH Acc</th>
+                  <th>NIH F1</th>
+                  <th>NIH AUC</th>
+                  <th>VinBig Acc</th>
+                  <th>VinBig F1</th>
+                  <th>VinBig AUC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="left"><strong>Baseline (Raw CXR)</strong></td>
+                  <td>0.5700</td><td>0.6815</td><td>0.5932</td>
+                  <td><strong>0.9200</strong></td><td><strong>0.9231</strong></td><td>0.9676</td>
+                </tr>
+                <tr class="row-winner">
+                  <td class="left"><strong>Median Filter L3 (7×7)</strong></td>
+                  <td><strong>0.5900</strong></td><td>0.7007</td><td>0.5704</td>
+                  <td>0.9100</td><td>0.9072</td><td><strong>0.9680</strong></td>
+                </tr>
+                <tr class="row-warn">
+                  <td class="left"><strong>Median Filter L4 (9×9) [Over-smooth]</strong></td>
+                  <td>0.5700 ↓</td><td>0.6767 ↓</td><td>0.5880</td>
+                  <td>0.8700 ↓</td><td>0.8762 ↓</td><td>0.9528 ↓</td>
+                </tr>
+                <tr>
+                  <td class="left"><strong>CLAHE + DWT L1</strong></td>
+                  <td><strong>0.5900</strong></td><td><strong>0.7050</strong></td><td>0.5084</td>
+                  <td>0.8700</td><td>0.8713</td><td>0.9512</td>
+                </tr>
+                <tr>
+                  <td class="left"><strong>Pure DWT L1</strong></td>
+                  <td>0.5700</td><td>0.6614</td><td><strong>0.6616</strong></td>
+                  <td>0.9000</td><td>0.9000</td><td>0.9560</td>
+                </tr>
+                <tr class="row-warn">
+                  <td class="left"><strong>DWT Single Band (Low/Mid/High)</strong></td>
+                  <td>0.52–0.57</td><td>0.56–0.65</td><td>0.52–0.59</td>
+                  <td>0.78–0.85 ↓</td><td>0.74–0.85 ↓</td><td>0.88–0.93 ↓</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="callout warn" style="margin-top:10px;">
+              <strong>2 ข้อค้นพบสำคัญจากการทดลองที่ 1:</strong><br/>
+              1. <strong>ภาวะ Over-smoothing ที่ระดับ L4:</strong> เมื่อเพิ่ม Median Filter จาก L3 ($7\times7$) เป็น L4 ($9\times9$) ความแม่นยำลดลงทั้งบน NIH (59%→57%) และ VinBigData (91%→87%)<br/>
+              2. <strong>การแยกย่านความถี่เดี่ยว:</strong> ทำให้ Accuracy บน VinBigData ลดลงเหลือ 78–85% เป็นเหตุผลสำคัญให้พัฒนา <strong>Multi-view Frequency Fusion</strong> ในการทดลองที่ 2
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="img-box">
+              <img src="slides_assets/Fig02_Exp1_NIH_Top6_Confusion_Matrices.png" alt="NIH Exp 1 Confusion Matrices" style="max-height:195px;" />
+              <div class="img-caption">ภาพที่ 2 Confusion Matrices ตัวแทน 6 สภาวะบน NIH (การทดลองที่ 1)</div>
+            </div>
+            <div class="img-box">
+              <img src="slides_assets/Fig03_Exp1_VinBigData_Top6_Confusion_Matrices.png" alt="VinBigData Exp 1 Confusion Matrices" style="max-height:195px;" />
+              <div class="img-caption">ภาพที่ 3 Confusion Matrices ตัวแทน 6 สภาวะบน VinBigData (การทดลองที่ 1)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอกด้วยการลดสัญญาณรบกวนและ XAI</span>
+        <span>สไลด์ 7 / 12 (เวลาสะสม 6:00 นาที)</span>
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 8: EXP 2 RESULTS COMBINED (1:10) ================= -->
+    <div class="slide" data-notes="[6:00 - 7:10 | ปิยะพล] มาดูผลการทดลองที่ 2 ซึ่งประเมินค่าเฉลี่ย Macro-average จาก 16 สภาวะสัญญาณรบกวน (1,600 การทำนายต่อวิธี) ครับ ข้อค้นพบที่โดดเด่นที่สุดคือ วิธี DAE -> CLAHE L2 ชนะเลิศอันดับ 1 ในกลุ่มภาพเดี่ยว (1 View) ตรงกันทั้งสองชุดข้อมูลครับ! บน NIH ได้ Mean ROC-AUC 0.6711, PR-AUC 0.6920 และ Accuracy 62.13% เพิ่มขึ้นจาก Baseline +4.69% และช่วยยกระดับ Specificity จาก 48.63% เป็น 60.88% ส่วนบน VinBigData อันดับ 1 โดยรวมคือ DFT Low/Mid/High Fusion (3 Views) ด้วย Mean ROC-AUC สูงถึง 0.9991 และ Accuracy 97.81% ตามมาด้วยอันดับ 1 ของกลุ่มภาพเดี่ยวคือ DAE -> CLAHE L2 ที่ได้ ROC-AUC 0.9970 และ Accuracy 96.50% ครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>7. ผลการทดลองที่ 2: ความทนทานต่อ Noise 16 สภาวะ (NIH & VinBigData)</h2>
+          <p>ตารางที่ 6–7 และภาพที่ 4–5 ค่าเฉลี่ย Macro-average จาก 16 สภาวะ (1,600 การทำนาย/วิธี)</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 1:10 นาที (ปิยะพล)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2" style="align-items: start;">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <table class="data-table" style="font-size:11.8px;">
+              <thead>
+                <tr>
+                  <th>ชุดข้อมูล</th>
+                  <th>อันดับ</th>
+                  <th>วิธี (Condition)</th>
+                  <th>Views</th>
+                  <th>ROC-AUC</th>
+                  <th>PR-AUC</th>
+                  <th>Accuracy</th>
+                  <th>Recall</th>
+                  <th>Spec.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="row-winner">
+                  <td><strong>NIH</strong></td><td><strong>1</strong></td><td class="left"><code>dae_clahe_strength_L2</code></td><td>1</td>
+                  <td><strong>0.6711</strong></td><td><strong>0.6920</strong></td><td><strong>62.13%</strong></td><td>63.38%</td><td><strong>60.88%</strong></td>
+                </tr>
+                <tr>
+                  <td>NIH</td><td>2</td><td class="left"><code>dae_clahe_strength_L3</code></td><td>1</td>
+                  <td>0.6705</td><td>0.6695</td><td>60.81%</td><td>49.00%</td><td>72.63%</td>
+                </tr>
+                <tr>
+                  <td>NIH</td><td>4</td><td class="left"><code>dft_low_mid_high_fusion</code></td><td>3</td>
+                  <td>0.6401</td><td>0.6726</td><td>57.44%</td><td>58.50%</td><td>56.38%</td>
+                </tr>
+                <tr>
+                  <td>NIH</td><td>5</td><td class="left"><code>baseline</code> (ไม่ลด Noise)</td><td>1</td>
+                  <td>0.6367</td><td>0.6698</td><td>57.44%</td><td>66.25%</td><td>48.63%</td>
+                </tr>
+                <tr class="row-winner">
+                  <td><strong>VinBig</strong></td><td><strong>1</strong></td><td class="left"><code>dft_low_mid_high_fusion</code></td><td>3</td>
+                  <td><strong>0.9991</strong></td><td><strong>0.9991</strong></td><td><strong>97.81%</strong></td><td><strong>98.38%</strong></td><td><strong>97.25%</strong></td>
+                </tr>
+                <tr class="row-winner">
+                  <td><strong>VinBig</strong></td><td><strong>2 (1-View #1)</strong></td><td class="left"><code>dae_clahe_strength_L2</code></td><td>1</td>
+                  <td><strong>0.9970</strong></td><td><strong>0.9972</strong></td><td><strong>96.50%</strong></td><td>97.50%</td><td>95.50%</td>
+                </tr>
+                <tr>
+                  <td>VinBig</td><td>3</td><td class="left"><code>median_L3</code> (7×7)</td><td>1</td>
+                  <td>0.9970</td><td>0.9972</td><td>95.69%</td><td>97.13%</td><td>94.25%</td>
+                </tr>
+                <tr>
+                  <td>VinBig</td><td>4</td><td class="left"><code>baseline</code> (ไม่ลด Noise)</td><td>1</td>
+                  <td>0.9967</td><td>0.9970</td><td>95.38%</td><td>93.50%</td><td>97.25%</td>
+                </tr>
+                <tr class="row-warn">
+                  <td>VinBig</td><td>12</td><td class="left"><code>dwt_L1_L4_fusion</code></td><td>5</td>
+                  <td>0.9785</td><td>0.9821</td><td>91.19%</td><td>88.63%</td><td>93.75%</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="callout success" style="font-size:13px;">
+              <strong>สรุปผลตรงกันทั้ง 2 ชุดข้อมูล:</strong> <code>DAE → CLAHE L2</code> ชนะเลิศอันดับ 1 ในกลุ่มภาพเดี่ยว (NIH Acc <strong>+4.69%</strong>, Spec 48.63%→<strong>60.88%</strong>; VinBigData Recall 93.50%→<strong>97.50%</strong>) และ <code>DFT Fusion (3 Views)</code> ได้อันดับ 1 โดยรวมบน VinBigData (<strong>Acc 97.81%</strong>)
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="img-box">
+              <img src="slides_assets/Fig04_Exp2_NIH_Key4_Confusion_Matrices.png" alt="NIH Exp 2 Confusion Matrices" style="max-height:190px;" />
+              <div class="img-caption">ภาพที่ 4 เมทริกซ์ความสับสนรวม 16 สภาวะ (1,600 การทำนาย) บน NIH</div>
+            </div>
+            <div class="img-box">
+              <img src="slides_assets/Fig05_Exp2_VinBigData_Key4_Confusion_Matrices.png" alt="VinBigData Exp 2 Confusion Matrices" style="max-height:190px;" />
+              <div class="img-caption">ภาพที่ 5 เมทริกซ์ความสับสนรวม 16 สภาวะ (1,600 การทำนาย) บน VinBigData</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอกด้วยการลดสัญญาณรบกวนและ XAI</span>
+        <span>สไลด์ 8 / 12 (เวลาสะสม 7:10 นาที)</span>
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 9: NOISE SPECIFICITY (0:50) ================= -->
+    <div class="slide" data-notes="[7:10 - 8:00 | ปิยะพล] เมื่อวิเคราะห์แยกตามตระกูลสัญญาณรบกวนในตารางที่ 8 เราพบความจำเพาะที่ชัดเจนครับ 1. สำหรับสัญญาณรบกวนแบบกระจายตัวต่อเนื่อง ได้แก่ Gaussian, Poisson, Poisson-Gaussian และ Speckle วิธี DAE -> CLAHE และ DFT Fusion ให้ผลดีที่สุดทั้งสองชุดข้อมูล เพราะ Autoencoder เรียนรู้การกระจายตัวของ Noise ได้โดยไม่ทำลายเนื้อเยื่อฝ้า 2. ส่วนสัญญาณรบกวนแบบจุด (Salt-and-Pepper) ซึ่งเป็นจุดอ่อนรุนแรงที่สุดของ Baseline พบว่า Median Filter L1 (3x3) และ DAE -> CLAHE สามารถกู้คืนค่า ROC-AUC บน NIH จาก 0.6025 กลับมาเป็น 0.6988 และกู้คืน Accuracy บน VinBigData กลับมาเป็น 93-96% ได้อย่างชัดเจนครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>8. ความจำเพาะของแต่ละเทคนิคต่อตระกูลสัญญาณรบกวน (Noise Specificity)</h2>
+          <p>ตารางที่ 8 วิธีที่ให้ผลดีที่สุดแยกตามตระกูลสัญญาณรบกวน เปรียบเทียบ 2 ชุดข้อมูล (ค่าเฉลี่ยระดับ N1–N3)</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 0:50 นาที (ปิยะพล)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <table class="data-table" style="font-size:13px;">
+          <thead>
+            <tr>
+              <th>ตระกูลสัญญาณรบกวน</th>
+              <th>NIH: Baseline AUC</th>
+              <th>NIH: วิธีที่ดีที่สุด (AUC)</th>
+              <th>VinBigData: Baseline Acc (AUC)</th>
+              <th>VinBigData: วิธีที่ดีที่สุด</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left"><strong>Clean (ก่อนเติม Noise)</strong></td>
+              <td>0.6580</td>
+              <td><code>median_L1</code> (<strong>0.6980</strong>)</td>
+              <td>96.00% (0.9960)</td>
+              <td class="left"><code>clahe_dwt_L3</code> (<strong>98.00%</strong>) / <code>dft_fusion</code> (<strong>AUC 1.0000</strong>)</td>
+            </tr>
+            <tr class="row-winner">
+              <td class="left"><strong>Gaussian</strong></td>
+              <td>0.6527</td>
+              <td><code>dae_clahe_L3</code> (<strong>0.6995</strong>)</td>
+              <td>96.33% (0.9976)</td>
+              <td class="left"><code>dft_fusion</code> (<strong>99.00%</strong>); ภาพเดี่ยว: <code>dae_clahe_L1/L2</code> (96.67%)</td>
+            </tr>
+            <tr class="row-winner">
+              <td class="left"><strong>Poisson</strong></td>
+              <td>0.6424</td>
+              <td><code>dae_clahe_L3</code> (<strong>0.6876</strong>)</td>
+              <td>96.33% (0.9987)</td>
+              <td class="left"><code>dft_fusion</code> (<strong>98.67%</strong>); ภาพเดี่ยว: <code>median_L2</code> (97.67%)</td>
+            </tr>
+            <tr class="row-winner">
+              <td class="left"><strong>Poisson–Gaussian</strong></td>
+              <td>0.6344</td>
+              <td><code>dae_clahe_L3</code> (<strong>0.6796</strong>)</td>
+              <td>96.00% (0.9988)</td>
+              <td class="left"><code>dft_fusion</code> (<strong>98.00%</strong>); ภาพเดี่ยว: <code>dae_clahe_L1</code> (97.33%)</td>
+            </tr>
+            <tr>
+              <td class="left"><strong>Salt-and-Pepper (Impulse)</strong></td>
+              <td>0.6025 (ต่ำสุด)</td>
+              <td><strong><code>median_L1</code> (0.6988)</strong></td>
+              <td>92.33% (0.9903)</td>
+              <td class="left"><strong><code>dae_clahe_L3</code> (96.00%)</strong> / <code>dft_fusion</code> (95.67%)</td>
+            </tr>
+            <tr class="row-winner">
+              <td class="left"><strong>Speckle</strong></td>
+              <td>0.6441</td>
+              <td><code>dae_clahe_L2</code> (<strong>0.6873</strong>)</td>
+              <td>95.67% (0.9983)</td>
+              <td class="left"><code>dft_fusion</code> (<strong>98.33%</strong>); ภาพเดี่ยว: <code>dae_clahe_L1</code> (97.67%)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="grid-2">
+          <div class="card accent-teal">
+            <h3>1. Noise แบบกระจายตัวต่อเนื่อง (Gaussian, Poisson, Speckle)</h3>
+            <p><strong>DAE → CLAHE (L2/L3)</strong> และ <strong>DFT Fusion</strong> ให้ผลดีที่สุดทั้ง 2 ชุดข้อมูล เนื่องจาก Autoencoder เรียนรู้การกระจายตัวของสัญญาณรบกวนได้โดยคงรายละเอียดเนื้อเยื่อฝ้าไว้</p>
+          </div>
+          <div class="card accent-gold">
+            <h3>2. Noise แบบจุด (Salt-and-Pepper)</h3>
+            <p>เป็นจุดอ่อนของ Baseline (NIH AUC ตกเหลือ 0.6025, VinBigData ที่ระดับ N2 Acc ตกเหลือ 89.00%): <strong>Median L1 ($3\times3$)</strong> กู้คืน AUC บน NIH เป็น <strong>0.6988</strong> และบน VinBigData กู้คืน Acc เป็น <strong>93–96%</strong></p>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอกด้วยการลดสัญญาณรบกวนและ XAI</span>
+        <span>สไลด์ 9 / 12 (เวลาสะสม 8:00 นาที)</span>
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 10: PSNR VS ROC-AUC (1:00) ================= -->
+    <div class="slide" data-notes="[8:00 - 9:00 | ปิยะพล] สไลด์นี้คือข้อค้นพบสำคัญที่ตอบคำถามว่า ค่า PSNR และ SSIM ที่สูงขึ้น ทำให้ AI จำแนกโรคดีขึ้นจริงหรือไม่? เราตรวจสอบที่สภาวะรุนแรงที่สุด คือ Gaussian N3 (sigma = 0.10) ในตารางที่ 9 และกราฟภาพที่ 6 ครับ ผลปรากฏว่า median_L3 (7x7) ให้ค่า PSNR สูงที่สุดถึง 29.79 dB และ SSIM สูงที่สุด 0.7775 บน NIH แต่เมื่อนำไปจำแนกโรค ค่า ROC-AUC บน NIH กลับดิ่งลงจาก 0.6688 เหลือเพียง 0.5624 และ Accuracy บน VinBigData ลดลงจาก 99% เหลือ 94% ในทางตรงกันข้าม DAE -> CLAHE มี PSNR ต่ำกว่าจากการปรับเพิ่มความเปรียบต่างเฉพาะที่ แต่รักษาขอบเขตรอยฝ้าไว้ได้ จึงทำค่า ROC-AUC ได้สูงสุดทั้งสองชุดข้อมูล คือ 0.7036 บน NIH และ 1.0000 บน VinBigData พิสูจน์ว่าการเกลี่ยภาพที่รุนแรงทำให้เกิด Over-smoothing ลบเลือนรอยฝ้าจาง ๆ ที่โมเดลต้องใช้ตัดสินใจครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>9. ไฮไลต์: คุณภาพภาพ (PSNR/SSIM) vs ประสิทธิภาพการจำแนกโรค</h2>
+          <p>ตารางที่ 9 และภาพที่ 6 กรณีศึกษาสภาวะรุนแรง Gaussian N3 ($\sigma = 0.10$) — พิสูจน์ผลกระทบของภาวะ Over-smoothing</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 1:00 นาที (ปิยะพล)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2" style="align-items: center;">
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <table class="data-table" style="font-size:12.5px;">
+              <thead>
+                <tr>
+                  <th>วิธี (ที่สภาวะ Gaussian N3)</th>
+                  <th>NIH PSNR</th>
+                  <th>NIH SSIM</th>
+                  <th>NIH AUC</th>
+                  <th>VinBig PSNR</th>
+                  <th>VinBig SSIM</th>
+                  <th>VinBig AUC (Acc)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="left"><strong><code>baseline</code></strong></td>
+                  <td>20.56 dB</td><td>0.2161</td><td>0.6688</td>
+                  <td>20.53 dB</td><td>0.2655</td><td>0.9996 (99%)</td>
+                </tr>
+                <tr class="row-warn">
+                  <td class="left"><strong><code>median_L3</code> (7×7)</strong></td>
+                  <td><strong>29.79 dB</strong></td><td><strong>0.7775</strong></td><td><strong>0.5624 ↓</strong></td>
+                  <td><strong>29.85 dB</strong></td><td><strong>0.7964</strong></td><td><strong>0.9940 (94%) ↓</strong></td>
+                </tr>
+                <tr class="row-winner">
+                  <td class="left"><strong><code>dae_clahe</code> (L3 / L2)</strong></td>
+                  <td>20.64 dB</td><td>0.5501</td><td><strong>0.7036 ↑</strong></td>
+                  <td>17.68 dB</td><td>0.2757</td><td><strong>1.0000 (99%) ↑</strong></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="callout warn" style="font-size:13.5px;">
+              <strong>ทำไม PSNR สูงสุดแต่จำแนกโรคแย่ลง?</strong><br/>
+              • <code>median_L3</code> ($7\times7$) เกลี่ยภาพในพื้นที่กว้างจนเรียบ ทำให้ <strong>PSNR สูงที่สุด (~29.8 dB)</strong> แต่ได้<strong>ลบเลือนขอบฝ้าจาง ๆ ของ Infiltration</strong> ที่โมเดลต้องใช้จำแนกโรค จน ROC-AUC บน NIH ตกเหลือ <strong>0.5624</strong><br/>
+              • <strong>DAE → CLAHE</strong> แม้จะมี PSNR ต่ำกว่าจากการปรับ Contrast เฉพาะที่ แต่รักษาและเน้นโครงสร้างรอยฝ้าไว้ได้ จึงได้ <strong>ROC-AUC สูงสุดทั้ง 2 ชุดข้อมูล (0.7036 และ 1.0000)</strong>
+            </div>
+          </div>
+
+          <div class="img-box">
+            <img src="slides_assets/Fig06_NIH_PSNR_vs_ROCAUC_GaussianN3.png" alt="PSNR vs ROC-AUC Gaussian N3" style="max-height:385px;" />
+            <div class="img-caption">ภาพที่ 6 ความสัมพันธ์ระหว่างค่า PSNR เฉลี่ยกับ ROC-AUC ของแต่ละวิธีที่สภาวะ Gaussian N3 บนชุดข้อมูล NIH</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอกด้วยการลดสัญญาณรบกวนและ XAI</span>
+        <span>สไลด์ 10 / 12 (เวลาสะสม 9:00 นาที)</span>
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 11: XAI PLAN & TIMELINE (0:35) ================= -->
+    <div class="slide" data-notes="[9:00 - 9:35 | ปิยะพล] จากผลเบื้องต้น จึงสนับสนุนให้เราเลือก DAE -> CLAHE L2 เป็นวิธีหลักสำหรับการประเมิน XAI เชิงปริมาณในระยะถัดไป โดยเก็บ Baseline, Median L1 และ DFT Fusion ไว้เป็นคู่เปรียบเทียบ ปัจจุบันเราดำเนินการขั้นตอนที่ 1 ถึง 5 เสร็จสมบูรณ์แล้ว และในช่วงเดือนพฤศจิกายนถึงมีนาคม 2570 เราจะฝึกสอนยืนยันผลด้วยหลาย Random Seed สกัดแผนภาพ Grad-CAM และ SHAP และวัดความแม่นยำเชิงตำแหน่งเทียบกับกรอบแพทย์ครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>10. แนวทางการประเมิน XAI เชิงปริมาณ ขอบเขต และแผนการดำเนินงาน</h2>
+          <p>การคัดเลือกแบบจำลองตัวแทนสู่ระยะประเมิน XAI และแผนงาน (ก.ย. 2569 – มี.ค. 2570)</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 0:35 นาที (ปิยะพล)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2" style="align-items: start;">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="card accent-teal">
+              <h3>การคัดเลือกวิธีสู่ระยะประเมิน XAI & Multi-seed</h3>
+              <ul>
+                <li><strong>วิธีหลัก:</strong> <strong><code>DAE → CLAHE L2</code></strong> (ชนะเลิศกลุ่ม 1-View ทั้ง 2 ชุดข้อมูล)</li>
+                <li><strong>คู่เปรียบเทียบ:</strong> <code>Baseline</code>, <code>Median L1</code> (สำหรับ Salt & Pepper) และ <code>DFT Fusion</code></li>
+                <li><strong>การยืนยันผล:</strong> ฝึกสอนด้วยหลาย Random Seed (<strong>Multi-seed Fair Comparison</strong>) และวัดความสอดคล้องของ <strong>Grad-CAM / SHAP</strong> กับกรอบแพทย์ด้วย <strong>Pointing Game, Energy Inside Box และ IoU</strong></li>
+              </ul>
+            </div>
+
+            <div class="card accent-gold">
+              <h3>แผนการดำเนินงานและงบประมาณ (11,440 บาท)</h3>
+              <ul>
+                <li><strong>ก.ย. – ต.ค. 2569 (เสร็จสิ้นแล้ว ✔):</strong> คัดเลือกชุดข้อมูล, Preprocessing, การทดลองที่ 1 (21 สภาวะ), การทดลองที่ 2 (12 วิธี × 16 สภาวะ) และประเมิน PSNR/SSIM</li>
+                <li><strong>พ.ย. – ธ.ค. 2569:</strong> ฝึกสอนยืนยันผลหลาย Seed และสกัดแผนภาพ XAI (Grad-CAM & SHAP)</li>
+                <li><strong>ม.ค. – มี.ค. 2570:</strong> ประเมิน XAI Localization เชิงสถิติ สรุปผลและจัดทำรายงานฉบับสมบูรณ์</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="img-box">
+              <img src="slides_assets/Fig10_XAI_GradCAM_BBox_Example.png" alt="GradCAM BBox" style="max-height:190px;" />
+              <div class="img-caption">ตัวอย่าง Grad-CAM เทียบกับกรอบ Ground-Truth ของแพทย์ (สีเขียว)</div>
+            </div>
+            <div class="img-box">
+              <img src="slides_assets/Fig11_XAI_SHAP_Attribution_Example.png" alt="SHAP Attribution" style="max-height:190px;" />
+              <div class="img-caption">ตัวอย่างการวิเคราะห์ Pixel Attribution ด้วย SHAP</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>การเพิ่มประสิทธิภาพการตรวจจับภาวะปอดอักเสบจากภาพเอกซเรย์ทรวงอกด้วยการลดสัญญาณรบกวนและ XAI</span>
+        <span>สไลด์ 11 / 12 (เวลาสะสม 9:35 นาที)</span>
+      </div>
+    </div>
+
+    <!-- ================= SLIDE 12: CONCLUSION (0:25) ================= -->
+    <div class="slide" data-notes="[9:35 - 10:00 | ปิยะพล] โดยสรุป โครงงานนี้ได้พิสูจน์เชิงประจักษ์ถึงอันตรายของภาวะ Over-smoothing ที่ค่า PSNR ไม่สามารถสะท้อนความสามารถในการจำแนกโรคได้ และพบว่า DAE -> CLAHE L2 ร่วมกับ DFT Fusion สามารถยกระดับความแม่นยำและความทนทานของโมเดลได้อย่างมีนัยสำคัญทั้งสองชุดข้อมูล พวกผมขอจบการนำเสนอเพียงเท่านี้ ขอกราบขอบพระคุณและขอรับฟังคำแนะนำจากท่านอาจารย์ครับ">
+      <div class="slide-header">
+        <div class="title-group">
+          <h2>11. สรุปผลการศึกษาเบื้องต้นและประโยชน์ที่คาดว่าจะได้รับ</h2>
+          <p>บทสรุปสำคัญ 3 ประการจากโครงงานวิจัย</p>
+        </div>
+        <div class="header-badges">
+          <div class="badge-time">⏱️ 0:25 นาที (ปิยะพล)</div>
+          <div class="badge-code">CS2569/SCS3-24</div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="grid-3">
+          <div class="card accent-brick">
+            <h3>1. พิสูจน์ภาวะ Over-smoothing</h3>
+            <p>ค่า <strong>PSNR/SSIM ที่สูงไม่ได้แปลว่าโมเดลจำแนกโรคได้ดีขึ้น</strong> การเกลี่ยภาพที่รุนแรงเกินไป (เช่น Median L3/L4) ลบเลือนขอบฝ้าจาง ๆ ของ Infiltration จนความแม่นยำและ ROC-AUC ลดลงทั้ง 2 ชุดข้อมูล</p>
+          </div>
+          <div class="card accent-teal">
+            <h3>2. วิธีภาพเดี่ยวที่ดีที่สุด</h3>
+            <p><strong>DAE → CLAHE L2</strong> ได้อันดับ 1 ในกลุ่มภาพเดี่ยวตรงกันทั้ง 2 ชุดข้อมูลในการรับมือสัญญาณรบกวน 16 สภาวะ (NIH Mean AUC <strong>0.6711</strong>, Acc <strong>62.13%</strong>; VinBigData Mean AUC <strong>0.9970</strong>, Acc <strong>96.50%</strong>)</p>
+          </div>
+          <div class="card accent-blue">
+            <h3>3. การรวมหลายมุมมองความถี่</h3>
+            <p><strong>DFT Low/Mid/High Fusion (3 Views)</strong> ทำความแม่นยำสูงสุดโดยรวมบน VinBigData (Mean AUC <strong>0.9991</strong>, Acc <strong>97.81%</strong>) และช่วยเสริมความทนทานต่อ Noise แบบกระจายตัวต่อเนื่อง</p>
+          </div>
+        </div>
+
+        <div class="card accent-gold" style="text-align:center; padding:26px; margin-top:8px;">
+          <h3 style="justify-content:center; font-size:24px; color:#0F172A;">ขอกราบขอบพระคุณคณะกรรมการทุกท่าน</h3>
+          <p style="font-size:16px; color:#475569; margin-top:6px;">
+            เปิดรับคำถามและข้อเสนอแนะ (Questions & Suggestions) • รหัสโครงงาน CS2569/SCS3-24
+          </p>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>นายสัพพัญญู คำตุ้ม (673380066-4) • นายปิยะพล ตุ่นป่า (673380280-2) | ที่ปรึกษา: อ.ดร.พบพร ด่านวิรุทัย</span>
+        <span>สไลด์ 12 / 12 (ครบ 10:00 นาที)</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Speaker Notes Drawer -->
+  <div class="notes-panel" id="notesPanel"></div>
+
+  <!-- Bottom Control Bar with 10-Minute Timer -->
+  <div class="control-bar">
+    <div style="display:flex; gap:14px; align-items:center;">
+      <strong>CS2569/SCS3-24 (10 Min)</strong> • <span id="slideCounter">Slide 1 / 12</span>
+      <span class="timer-display" id="timerDisplay">⏱️ 10:00</span>
+      <button class="ctrl-btn" onclick="toggleTimer()" id="timerBtn">▶ เริ่มจับเวลา</button>
+      <button class="ctrl-btn" onclick="resetTimer()">↺ รีเซ็ต</button>
+    </div>
+    <div class="btn-group">
+      <button class="ctrl-btn" onclick="prevSlide()">◀ ก่อนหน้า</button>
+      <button class="ctrl-btn primary" onclick="nextSlide()">ถัดไป ▶</button>
+      <button class="ctrl-btn" onclick="toggleNotes()">📝 บทพูด (N)</button>
+      <button class="ctrl-btn" onclick="toggleFullScreen()">⛶ เต็มจอ (F)</button>
+      <button class="ctrl-btn" onclick="window.print()">🖨️ พิมพ์ / PDF</button>
+    </div>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const counter = document.getElementById('slideCounter');
+    const notesPanel = document.getElementById('notesPanel');
+    const deckContainer = document.getElementById('deckContainer');
+    let currentIndex = 0;
+
+    // 10-Minute Countdown Timer Logic
+    let remainingSeconds = 600;
+    let timerInterval = null;
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerBtn = document.getElementById('timerBtn');
+
+    function formatTime(sec) {
+      const m = Math.floor(Math.abs(sec) / 60).toString().padStart(2, '0');
+      const s = (Math.abs(sec) % 60).toString().padStart(2, '0');
+      return (sec < 0 ? '-' : '') + `${m}:${s}`;
+    }
+
+    function updateTimerUI() {
+      timerDisplay.textContent = `⏱️ ${formatTime(remainingSeconds)}`;
+      timerDisplay.classList.remove('warning', 'expired');
+      if (remainingSeconds <= 0) {
+        timerDisplay.classList.add('expired');
+      } else if (remainingSeconds <= 120) {
+        timerDisplay.classList.add('warning');
+      }
+    }
+
+    function toggleTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerBtn.textContent = '▶ เริ่มต่อ';
+      } else {
+        timerInterval = setInterval(() => {
+          remainingSeconds--;
+          updateTimerUI();
+        }, 1000);
+        timerBtn.textContent = '⏸ หยุดพัก';
+      }
+    }
+
+    function resetTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      remainingSeconds = 600;
+      timerBtn.textContent = '▶ เริ่มจับเวลา';
+      updateTimerUI();
+    }
+
+    function updateSlide() {
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === currentIndex);
+      });
+      counter.textContent = `Slide ${currentIndex + 1} / ${slides.length}`;
+      const noteText = slides[currentIndex].getAttribute('data-notes') || '';
+      notesPanel.innerHTML = `<strong>🎤 บทพูด 10 นาที (สไลด์ที่ ${currentIndex + 1}/12):</strong> ${noteText}`;
+      fitSlideToScreen();
+    }
+
+    function nextSlide() {
+      if (currentIndex < slides.length - 1) {
+        currentIndex++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateSlide();
+      }
+    }
+
+    function toggleNotes() {
+      notesPanel.classList.toggle('show');
+      setTimeout(fitSlideToScreen, 50);
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function fitSlideToScreen() {
+      const activeSlide = slides[currentIndex];
+      if (!activeSlide) return;
+      const availW = deckContainer.clientWidth - 24;
+      const availH = deckContainer.clientHeight - 24;
+      const scale = Math.min(availW / 1280, availH / 720, 1.15);
+      activeSlide.style.transform = `scale(${scale})`;
+    }
+
+    window.addEventListener('resize', fitSlideToScreen);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      }
+    });
+
+    updateSlide();
+  </script>
+</body>
+</html>
